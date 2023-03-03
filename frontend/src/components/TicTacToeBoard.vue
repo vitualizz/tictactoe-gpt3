@@ -1,5 +1,6 @@
 <template>
   <div class='tictactoeBoard'>
+    <h1 v-if='loading'>Esperando movimiento de GPT-3.</h1>
     <div
       v-for='(row, rowIndex) in board'
       :key='rowIndex'
@@ -20,6 +21,9 @@
 </template>
 
 <script>
+import axios from 'axios'
+const apiUrl = 'http://localhost:3000'
+
 export default {
   name: 'TicTacToeBoard',
 
@@ -32,11 +36,14 @@ export default {
       ],
       playerTurn: 'X',
       checkedBoxes: 0,
+      loading: false,
     }
   },
 
   methods: {
     setMark (rowIndex, elementIndex) {
+      if (this.loading) return
+
       const row = this.board[rowIndex]
 
       if (row[elementIndex].length == 0) {
@@ -46,10 +53,29 @@ export default {
       this.nextTurn()
     },
 
-    nextTurn () {
+    async nextTurn () {
       this.playerTurn = this.playerTurn == 'X' ? 'O' : 'X'
       this.checkedBoxes += 1
+
       this.calculateWinner()
+      if (this.playerTurn == 'O') {
+        await this.fetchTicTacToe()
+        this.calculateWinner()
+        this.playerTurn = 'X'
+      }
+    },
+
+    async fetchTicTacToe () {
+      try {
+        this.loading = true
+        const { board } = this
+        const { data } = await axios.post(`${apiUrl}/tic-tac-toe`, { board })
+
+        this.board = data
+        this.loading = false
+      } catch (e) {
+        console.error(e.message)
+      }
     },
 
     calculateWinner () {
