@@ -2,6 +2,7 @@ require('dotenv').config()
 const express = require('express')
 const bodyParser = require('body-parser')
 const app = express()
+const cors = require('cors')
 const port = 3000
 
 const { Configuration, OpenAIApi } = require("openai");
@@ -22,7 +23,7 @@ const getBoardFromOpenAI = async board => {
       ${board}\n
       El Player O, ingresa un movimiento con la letra O y responde solo dibujando el tablero.\n`,
       temperature: 0.5,
-      max_tokens: 20,
+      max_tokens: 22,
       n: 1,
     });
 
@@ -44,7 +45,6 @@ const boardStringGPT = board => {
 
 const parseBoardGPT = boardGPT => {
   let res = []
-  console.log
   board = boardGPT.trim().split('\n')
 
   for (i in board) {
@@ -61,6 +61,7 @@ const parseBoardGPT = boardGPT => {
   return res
 }
 
+app.use(cors())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 
@@ -70,7 +71,10 @@ app.get('/', (req, res) => {
 
 app.post('/tic-tac-toe', async (req, res) => {
   const { board } = req.body
+  console.log('----------')
+  console.log(board)
   const results = await getBoardFromOpenAI(board)
+  console.log('result: ', results)
   const parseResults = parseBoardGPT(results)
   res.send(parseResults)
 })
