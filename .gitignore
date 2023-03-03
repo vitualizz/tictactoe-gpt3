@@ -1,0 +1,13 @@
+backend/node_modules
+frontend/node_modules
+build
+npm-debug.log
+.DS_Store
+serverless.yml
+.serverless
+backend/.env
+.env.local
+.env.dev
+.env.prod
+.env.staging
+config-dev.js
